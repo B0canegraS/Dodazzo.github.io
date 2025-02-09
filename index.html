@@ -11,6 +11,7 @@
             overflow: hidden;
             background-color: black;
             text-align: center;
+            touch-action: none;
         }
         canvas {
             display: block;
@@ -67,6 +68,7 @@
         let gameRunning = true;
         let timeElapsed = 0;
         let timerInterval;
+        let touchX = null; // Guarda la posición táctil
 
         function spawnBall() {
             let ball = { x: Math.random() * canvas.width, y: 0, size: 20, speed: ballSpeed };
@@ -127,14 +129,32 @@
                 if (gameRunning) {
                     timeElapsed++;
                     document.getElementById("timer").innerText = `Time: ${timeElapsed}s`;
-                    ballSpeed = Math.min(baseSpeed + timeElapsed * 0.2, 10); // Increment speed over time
+                    ballSpeed = Math.min(baseSpeed + timeElapsed * 0.2, 10);
                 }
             }, 1000);
         }
 
+        // Controles de teclado
         document.addEventListener("keydown", (event) => {
             if (event.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
             if (event.key === "ArrowRight" && player.x + player.width < canvas.width) player.x += player.speed;
+        });
+
+        // Controles táctiles
+        canvas.addEventListener("touchstart", (event) => {
+            touchX = event.touches[0].clientX;
+        });
+
+        canvas.addEventListener("touchmove", (event) => {
+            if (!touchX) return;
+            let newX = event.touches[0].clientX;
+            let movement = newX - touchX;
+            player.x += movement;
+            touchX = newX;
+
+            // Asegurar que el jugador no se salga de los límites
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
         });
 
         setInterval(spawnBall, 1000);
