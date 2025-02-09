@@ -63,16 +63,20 @@
 
         let player = { x: canvas.width / 2 - 25, y: canvas.height - 50, width: 50, height: 20 };
         let balls = [];
-        let baseSpeed = 2;
+        let baseSpeed = 1;
         let ballSpeed = baseSpeed;
         let gameRunning = true;
         let timeElapsed = 0;
         let timerInterval;
         let dragging = false;
-        let touchOffsetX = 0;
 
         function spawnBall() {
-            let ball = { x: Math.random() * (canvas.width - 20), y: 0, size: 20, speed: ballSpeed };
+            let ball = { 
+                x: Math.random() * (canvas.width - 20), 
+                y: 0, 
+                size: 20, 
+                speed: ballSpeed 
+            };
             balls.push(ball);
         }
 
@@ -95,11 +99,17 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Dibujar al jugador (rectángulo)
             ctx.fillStyle = "darkblue";
             ctx.fillRect(player.x, player.y, player.width, player.height);
 
+            // Dibujar bolas en vez de cuadrados
             ctx.fillStyle = "crimson";
-            balls.forEach(ball => ctx.fillRect(ball.x, ball.y, ball.size, ball.size));
+            balls.forEach(ball => {
+                ctx.beginPath();
+                ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, ball.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
         }
 
         function gameLoop() {
@@ -131,25 +141,37 @@
                 if (gameRunning) {
                     timeElapsed++;
                     document.getElementById("timer").innerText = `Time: ${timeElapsed}s`;
-                    ballSpeed = Math.min(baseSpeed + timeElapsed * 0.2, 10);
+
+                    // Aumenta la velocidad cada 5 segundos
+                    if (timeElapsed % 5 === 0) {
+                        ballSpeed = Math.min(baseSpeed + timeElapsed * 0.1, 8);
+                    }
                 }
             }, 1000);
         }
 
+        // EVENTOS TÁCTILES PARA MÓVILES
         canvas.addEventListener("touchstart", (event) => {
             let touch = event.touches[0];
-            if (touch.clientX >= player.x && touch.clientX <= player.x + player.width &&
-                touch.clientY >= player.y && touch.clientY <= player.y + player.height) {
+            let touchX = touch.clientX;
+            let touchY = touch.clientY;
+
+            if (
+                touchX >= player.x &&
+                touchX <= player.x + player.width &&
+                touchY >= player.y &&
+                touchY <= player.y + player.height
+            ) {
                 dragging = true;
-                touchOffsetX = touch.clientX - player.x;
             }
         });
 
         canvas.addEventListener("touchmove", (event) => {
             if (dragging) {
+                event.preventDefault(); 
                 let touch = event.touches[0];
-                player.x = touch.clientX - touchOffsetX;
-                player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+                let newX = touch.clientX - player.width / 2; 
+                player.x = Math.max(0, Math.min(canvas.width - player.width, newX));
             }
         });
 
