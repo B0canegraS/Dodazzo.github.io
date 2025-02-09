@@ -61,39 +61,46 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let player = { x: canvas.width / 2 - 25, y: canvas.height - 50, width: 50, height: 20 };
-        let balls = [];
+        let player = { x: canvas.width / 2 - 25, y: canvas.height - 50, width: 50, height: 20, speed: 5 };
+        let squares = [];
         let baseSpeed = 1;
-        let ballSpeed = baseSpeed;
+        let squareSpeed = baseSpeed;
         let gameRunning = true;
         let timeElapsed = 0;
         let timerInterval;
         let dragging = false;
+        let keys = {};
 
-        function spawnBall() {
-            let ball = { 
+        function spawnSquare() {
+            let square = { 
                 x: Math.random() * (canvas.width - 20), 
                 y: 0, 
                 size: 20, 
-                speed: ballSpeed 
+                speed: squareSpeed 
             };
-            balls.push(ball);
+            squares.push(square);
         }
 
         function update() {
             if (!gameRunning) return;
 
-            balls.forEach(ball => ball.y += ball.speed);
-            balls = balls.filter(ball => ball.y < canvas.height);
+            squares.forEach(square => square.y += square.speed);
+            squares = squares.filter(square => square.y < canvas.height);
 
-            balls.forEach(ball => {
-                if (ball.x < player.x + player.width &&
-                    ball.x + ball.size > player.x &&
-                    ball.y < player.y + player.height &&
-                    ball.y + ball.size > player.y) {
+            squares.forEach(square => {
+                if (square.x < player.x + player.width &&
+                    square.x + square.size > player.x &&
+                    square.y < player.y + player.height &&
+                    square.y + square.size > player.y) {
                     gameOver();
                 }
             });
+
+            // Movimiento con teclado
+            if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += player.speed;
+            if (keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
+            if (keys['ArrowDown'] && player.y < canvas.height - player.height) player.y += player.speed;
         }
 
         function draw() {
@@ -103,10 +110,8 @@
             ctx.fillRect(player.x, player.y, player.width, player.height);
 
             ctx.fillStyle = "crimson";
-            balls.forEach(ball => {
-                ctx.beginPath();
-                ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, ball.size / 2, 0, Math.PI * 2);
-                ctx.fill();
+            squares.forEach(square => {
+                ctx.fillRect(square.x, square.y, square.size, square.size);
             });
         }
 
@@ -124,9 +129,9 @@
 
         function restartGame() {
             gameRunning = true;
-            balls = [];
+            squares = [];
             timeElapsed = 0;
-            ballSpeed = baseSpeed;
+            squareSpeed = baseSpeed;
             document.getElementById("timer").innerText = "Time: 0s";
             document.getElementById("gameOverScreen").style.display = "none";
             startTimer();
@@ -140,9 +145,8 @@
                     timeElapsed++;
                     document.getElementById("timer").innerText = `Time: ${timeElapsed}s`;
 
-                    // Aumenta la velocidad cada 5 segundos
                     if (timeElapsed % 5 === 0) {
-                        ballSpeed = Math.min(baseSpeed + timeElapsed * 0.1, 8);
+                        squareSpeed = Math.min(baseSpeed + timeElapsed * 0.1, 8);
                     }
                 }
             }, 1000);
@@ -150,14 +154,11 @@
 
         canvas.addEventListener("touchstart", (event) => {
             let touch = event.touches[0];
-            let touchX = touch.clientX;
-            let touchY = touch.clientY;
-
             if (
-                touchX >= player.x &&
-                touchX <= player.x + player.width &&
-                touchY >= player.y &&
-                touchY <= player.y + player.height
+                touch.clientX >= player.x &&
+                touch.clientX <= player.x + player.width &&
+                touch.clientY >= player.y &&
+                touch.clientY <= player.y + player.height
             ) {
                 dragging = true;
             }
@@ -176,7 +177,15 @@
             dragging = false;
         });
 
-        setInterval(spawnBall, 1000);
+        window.addEventListener("keydown", (event) => {
+            keys[event.key] = true;
+        });
+
+        window.addEventListener("keyup", (event) => {
+            keys[event.key] = false;
+        });
+
+        setInterval(spawnSquare, 1000);
         startTimer();
         gameLoop();
     </script>
