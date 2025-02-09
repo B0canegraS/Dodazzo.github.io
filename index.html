@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dodazzo</title>
+    <title>PlayDodge</title>
     <style>
         body {
             margin: 0;
@@ -11,28 +11,9 @@
             background-color: black;
             text-align: center;
         }
-        body {
-            background-image: url('image.png');
-            background-size: cover; 
-            background-position: center; 
-            background-repeat: no-repeat;
-            height: 100vh; 
-            margin: 0; 
-        }
-
-    body::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: -1;
-    }
         canvas {
             display: block;
-            background-color: black;
+            background-color: rgb(165, 252, 255);
         }
         #gameOverScreen {
             position: fixed;
@@ -40,7 +21,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.8);
-            font-family: 'Poppins', sans-serif;
             color: white;
             padding: 20px;
             display: none;
@@ -62,7 +42,6 @@
             padding: 10px;
             font-size: 16px;
             cursor: pointer;
-            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
@@ -110,7 +89,7 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#39FF14";
+            ctx.fillStyle = "darkblue";
             ctx.fillRect(player.x, player.y, player.width, player.height);
             
             ctx.fillStyle = "crimson";
