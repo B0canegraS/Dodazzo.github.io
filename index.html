@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayDodge</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+            text-align: center;
+        }
+        canvas {
+            display: block;
+            background-color: rgb(165, 252, 255);
+        }
+        #gameOverScreen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            display: none;
+            border-radius: 10px;
+        }
+        #timer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+            font-family: 'Poppins', sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer">Time: 0s</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverScreen">
+        <h1>Game Over</h1>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let player = { x: canvas.width / 2, y: canvas.height - 50, width: 50, height: 20, speed: 10 };
+        let balls = [];
+        let baseSpeed = 2;
+        let ballSpeed = baseSpeed;
+        let gameRunning = true;
+        let timeElapsed = 0;
+        let timerInterval;
+
+        function spawnBall() {
+            let ball = { x: Math.random() * canvas.width, y: 0, size: 20, speed: ballSpeed };
+            balls.push(ball);
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            balls.forEach(ball => ball.y += ball.speed);
+            balls = balls.filter(ball => ball.y < canvas.height);
+            
+            balls.forEach(ball => {
+                if (ball.x < player.x + player.width &&
+                    ball.x + ball.size > player.x &&
+                    ball.y < player.y + player.height &&
+                    ball.y + ball.size > player.y) {
+                    gameOver();
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "darkblue";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            ctx.fillStyle = "crimson";
+            balls.forEach(ball => ctx.fillRect(ball.x, ball.y, ball.size, ball.size));
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById("gameOverScreen").style.display = "block";
+        }
+
+        function restartGame() {
+            gameRunning = true;
+            balls = [];
+            timeElapsed = 0;
+            ballSpeed = baseSpeed;
+            document.getElementById("timer").innerText = "Time: 0s";
+            document.getElementById("gameOverScreen").style.display = "none";
+            startTimer();
+            gameLoop();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameRunning) {
+                    timeElapsed++;
+                    document.getElementById("timer").innerText = `Time: ${timeElapsed}s`;
+                    ballSpeed = Math.min(baseSpeed + timeElapsed * 0.2, 10); // Increment speed over time
+                }
+            }, 1000);
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
+            if (event.key === "ArrowRight" && player.x + player.width < canvas.width) player.x += player.speed;
+        });
+
+        setInterval(spawnBall, 1000);
+        startTimer();
+        gameLoop();
+    </script>
+</body>
+</html>
