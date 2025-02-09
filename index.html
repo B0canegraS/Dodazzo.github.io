@@ -61,17 +61,18 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let player = { x: canvas.width / 2, y: canvas.height - 50, width: 50, height: 20, speed: 10 };
+        let player = { x: canvas.width / 2 - 25, y: canvas.height - 50, width: 50, height: 20 };
         let balls = [];
         let baseSpeed = 2;
         let ballSpeed = baseSpeed;
         let gameRunning = true;
         let timeElapsed = 0;
         let timerInterval;
-        let touchX = null; // Guarda la posición táctil
+        let dragging = false;
+        let touchOffsetX = 0;
 
         function spawnBall() {
-            let ball = { x: Math.random() * canvas.width, y: 0, size: 20, speed: ballSpeed };
+            let ball = { x: Math.random() * (canvas.width - 20), y: 0, size: 20, speed: ballSpeed };
             balls.push(ball);
         }
 
@@ -80,7 +81,7 @@
 
             balls.forEach(ball => ball.y += ball.speed);
             balls = balls.filter(ball => ball.y < canvas.height);
-            
+
             balls.forEach(ball => {
                 if (ball.x < player.x + player.width &&
                     ball.x + ball.size > player.x &&
@@ -93,9 +94,10 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             ctx.fillStyle = "darkblue";
             ctx.fillRect(player.x, player.y, player.width, player.height);
-            
+
             ctx.fillStyle = "crimson";
             balls.forEach(ball => ctx.fillRect(ball.x, ball.y, ball.size, ball.size));
         }
@@ -105,7 +107,7 @@
             draw();
             requestAnimationFrame(gameLoop);
         }
-        
+
         function gameOver() {
             gameRunning = false;
             clearInterval(timerInterval);
@@ -134,27 +136,25 @@
             }, 1000);
         }
 
-        // Controles de teclado
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
-            if (event.key === "ArrowRight" && player.x + player.width < canvas.width) player.x += player.speed;
-        });
-
-        // Controles táctiles
         canvas.addEventListener("touchstart", (event) => {
-            touchX = event.touches[0].clientX;
+            let touch = event.touches[0];
+            if (touch.clientX >= player.x && touch.clientX <= player.x + player.width &&
+                touch.clientY >= player.y && touch.clientY <= player.y + player.height) {
+                dragging = true;
+                touchOffsetX = touch.clientX - player.x;
+            }
         });
 
         canvas.addEventListener("touchmove", (event) => {
-            if (!touchX) return;
-            let newX = event.touches[0].clientX;
-            let movement = newX - touchX;
-            player.x += movement;
-            touchX = newX;
+            if (dragging) {
+                let touch = event.touches[0];
+                player.x = touch.clientX - touchOffsetX;
+                player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+            }
+        });
 
-            // Asegurar que el jugador no se salga de los límites
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+        canvas.addEventListener("touchend", () => {
+            dragging = false;
         });
 
         setInterval(spawnBall, 1000);
