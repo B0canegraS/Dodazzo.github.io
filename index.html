@@ -152,6 +152,7 @@
             }, 1000);
         }
 
+        // Control táctil para dispositivos móviles
         canvas.addEventListener("touchstart", (event) => {
             let touch = event.touches[0];
             if (
@@ -177,6 +178,7 @@
             dragging = false;
         });
 
+        // Control con teclado
         window.addEventListener("keydown", (event) => {
             keys[event.key] = true;
         });
