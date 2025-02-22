@@ -96,6 +96,7 @@
                 }
             });
 
+            // Movimiento con teclado
             if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
             if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += player.speed;
             if (keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
